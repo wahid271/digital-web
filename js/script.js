@@ -219,161 +219,95 @@
     document.head.appendChild(styleSheet);
 
     // ============================================
-    // AI Robot - Eye & Head Tracking
+    // AI Robot - EVE Image Tracking
     // ============================================
     function initRobotTracking() {
-        const robotHead = document.getElementById('robotHead');
-        const leftPupil = document.getElementById('leftPupil');
-        const rightPupil = document.getElementById('rightPupil');
+        const robotImageContainer = document.getElementById('robotImageContainer');
         const aiRobotWrapper = document.getElementById('aiRobotWrapper');
         
-        if (!robotHead || !leftPupil || !rightPupil) return;
+        if (!robotImageContainer) return;
         
         // Mouse move tracking
         document.addEventListener('mousemove', (e) => {
-            // Head tracking
-            if (robotHead) {
-                const headRect = robotHead.getBoundingClientRect();
-                const headCenterX = headRect.left + headRect.width / 2;
-                const headCenterY = headRect.top + headRect.height / 2;
+            if (robotImageContainer) {
+                const containerRect = robotImageContainer.getBoundingClientRect();
+                const containerCenterX = containerRect.left + containerRect.width / 2;
+                const containerCenterY = containerRect.top + containerRect.height / 2;
                 
-                const deltaX = e.clientX - headCenterX;
-                const deltaY = e.clientY - headCenterY;
+                const deltaX = e.clientX - containerCenterX;
+                const deltaY = e.clientY - containerCenterY;
                 
-                // Limit head rotation
-                const maxRotation = 15;
-                const rotateY = Math.max(-maxRotation, Math.min(maxRotation, deltaX / 20));
-                const rotateX = Math.max(-maxRotation, Math.min(maxRotation, -deltaY / 20));
+                // 3D rotation following cursor
+                const maxRotation = 20;
+                const rotateY = Math.max(-maxRotation, Math.min(maxRotation, deltaX / 15));
+                const rotateX = Math.max(-maxRotation, Math.min(maxRotation, -deltaY / 15));
                 
-                robotHead.style.transform = `translateX(-50%) perspective(600px) rotateY(${rotateY}deg) rotateX(${rotateX}deg)`;
-            }
-            
-            // Eye pupil tracking
-            if (leftPupil && rightPupil) {
-                const leftEye = leftPupil.parentElement;
-                const rightEye = rightPupil.parentElement;
+                // Apply 3D transform
+                robotImageContainer.style.transform = 
+                    `perspective(800px) rotateY(${rotateY}deg) rotateX(${rotateX}deg)`;
                 
-                const leftEyeRect = leftEye.getBoundingClientRect();
-                const rightEyeRect = rightEye.getBoundingClientRect();
-                
-                // Calculate pupil offset
-                const maxPupilOffset = 4; // Maximum pixels the pupil can move
-                
-                // Left eye
-                const leftEyeCenterX = leftEyeRect.left + leftEyeRect.width / 2;
-                const leftEyeCenterY = leftEyeRect.top + leftEyeRect.height / 2;
-                const leftDeltaX = Math.max(-maxPupilOffset, Math.min(maxPupilOffset, (e.clientX - leftEyeCenterX) / 15));
-                const leftDeltaY = Math.max(-maxPupilOffset, Math.min(maxPupilOffset, (e.clientY - leftEyeCenterY) / 15));
-                
-                leftPupil.style.transform = `translate(calc(-50% + ${leftDeltaX}px), calc(-50% + ${leftDeltaY}px))`;
-                
-                // Right eye
-                const rightEyeCenterX = rightEyeRect.left + rightEyeRect.width / 2;
-                const rightEyeCenterY = rightEyeRect.top + rightEyeRect.height / 2;
-                const rightDeltaX = Math.max(-maxPupilOffset, Math.min(maxPupilOffset, (e.clientX - rightEyeCenterX) / 15));
-                const rightDeltaY = Math.max(-maxPupilOffset, Math.min(maxPupilOffset, (e.clientY - rightEyeCenterY) / 15));
-                
-                rightPupil.style.transform = `translate(calc(-50% + ${rightDeltaX}px), calc(-50% + ${rightDeltaY}px))`;
+                // Subtle scale effect based on proximity
+                const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+                const scale = 1 + Math.min(0.05, distance / 5000);
+                robotImageContainer.style.transform += ` scale(${scale})`;
             }
         });
         
         // Reset position when mouse leaves
         document.addEventListener('mouseleave', () => {
-            if (robotHead) {
-                robotHead.style.transform = 'translateX(-50%) perspective(600px) rotateY(0deg) rotateX(0deg)';
-            }
-            if (leftPupil && rightPupil) {
-                leftPupil.style.transform = 'translate(-50%, -50%)';
-                rightPupil.style.transform = 'translate(-50%, -50%)';
+            if (robotImageContainer) {
+                robotImageContainer.style.transform = 
+                    'perspective(800px) rotateY(0deg) rotateX(0deg) scale(1)';
             }
         });
         
         // Touch tracking for mobile
         document.addEventListener('touchmove', (e) => {
             const touch = e.touches[0];
-            if (!touch) return;
+            if (!touch || !robotImageContainer) return;
             
-            if (robotHead) {
-                const headRect = robotHead.getBoundingClientRect();
-                const headCenterX = headRect.left + headRect.width / 2;
-                const headCenterY = headRect.top + headRect.height / 2;
-                
-                const deltaX = touch.clientX - headCenterX;
-                const deltaY = touch.clientY - headCenterY;
-                
-                const maxRotation = 10;
-                const rotateY = Math.max(-maxRotation, Math.min(maxRotation, deltaX / 25));
-                const rotateX = Math.max(-maxRotation, Math.min(maxRotation, -deltaY / 25));
-                
-                robotHead.style.transform = `translateX(-50%) perspective(600px) rotateY(${rotateY}deg) rotateX(${rotateX}deg)`;
-            }
+            const containerRect = robotImageContainer.getBoundingClientRect();
+            const containerCenterX = containerRect.left + containerRect.width / 2;
+            const containerCenterY = containerRect.top + containerRect.height / 2;
             
-            if (leftPupil && rightPupil) {
-                const maxPupilOffset = 3;
-                
-                const leftEye = leftPupil.parentElement;
-                const leftEyeRect = leftEye.getBoundingClientRect();
-                const leftEyeCenterX = leftEyeRect.left + leftEyeRect.width / 2;
-                const leftEyeCenterY = leftEyeRect.top + leftEyeRect.height / 2;
-                const leftDeltaX = Math.max(-maxPupilOffset, Math.min(maxPupilOffset, (touch.clientX - leftEyeCenterX) / 18));
-                const leftDeltaY = Math.max(-maxPupilOffset, Math.min(maxPupilOffset, (touch.clientY - leftEyeCenterY) / 18));
-                leftPupil.style.transform = `translate(calc(-50% + ${leftDeltaX}px), calc(-50% + ${leftDeltaY}px))`;
-                
-                const rightEye = rightPupil.parentElement;
-                const rightEyeRect = rightEye.getBoundingClientRect();
-                const rightEyeCenterX = rightEyeRect.left + rightEyeRect.width / 2;
-                const rightEyeCenterY = rightEyeRect.top + rightEyeRect.height / 2;
-                const rightDeltaX = Math.max(-maxPupilOffset, Math.min(maxPupilOffset, (touch.clientX - rightEyeCenterX) / 18));
-                const rightDeltaY = Math.max(-maxPupilOffset, Math.min(maxPupilOffset, (touch.clientY - rightEyeCenterY) / 18));
-                rightPupil.style.transform = `translate(calc(-50% + ${rightDeltaX}px), calc(-50% + ${rightDeltaY}px))`;
-            }
+            const deltaX = touch.clientX - containerCenterX;
+            const deltaY = touch.clientY - containerCenterY;
+            
+            const maxRotation = 12;
+            const rotateY = Math.max(-maxRotation, Math.min(maxRotation, deltaX / 20));
+            const rotateX = Math.max(-maxRotation, Math.min(maxRotation, -deltaY / 20));
+            
+            robotImageContainer.style.transform = 
+                `perspective(800px) rotateY(${rotateY}deg) rotateX(${rotateX}deg)`;
         }, { passive: true });
         
-        // Click interaction - robot "blink" effect
-        const robotFace = document.querySelector('.robot-face');
-        if (robotFace && aiRobotWrapper) {
+        // Touch end - reset
+        document.addEventListener('touchend', () => {
+            if (robotImageContainer) {
+                robotImageContainer.style.transform = 
+                    'perspective(800px) rotateY(0deg) rotateX(0deg) scale(1)';
+            }
+        });
+        
+        // Click interaction - bounce effect
+        if (aiRobotWrapper && robotImageContainer) {
             aiRobotWrapper.addEventListener('click', () => {
-                // Add blink class
-                robotFace.style.transition = 'transform 0.1s ease';
-                robotFace.style.transform = 'scale(0.95)';
+                robotImageContainer.style.transition = 'transform 0.15s cubic-bezier(0.68, -0.55, 0.265, 1.55)';
+                robotImageContainer.style.transform = 
+                    'perspective(800px) rotateY(0deg) rotateX(0deg) scale(0.9)';
                 
-                // Eyes close temporarily
-                const eyes = document.querySelectorAll('.eye');
-                eyes.forEach(eye => {
-                    eye.style.transition = 'transform 0.15s ease';
-                    eye.style.transform = 'scaleY(0.1)';
-                });
-                
-                // Reset after blink
                 setTimeout(() => {
-                    robotFace.style.transform = 'scale(1)';
-                    eyes.forEach(eye => {
-                        eye.style.transform = 'scaleY(1)';
-                    });
-                }, 200);
+                    robotImageContainer.style.transform = 
+                        'perspective(800px) rotateY(0deg) rotateX(0deg) scale(1.05)';
+                    
+                    setTimeout(() => {
+                        robotImageContainer.style.transform = 
+                            'perspective(800px) rotateY(0deg) rotateX(0deg) scale(1)';
+                        robotImageContainer.style.transition = 'transform 0.15s ease-out';
+                    }, 150);
+                }, 150);
             });
         }
-        
-        // Periodic random eye movement (when idle)
-        setInterval(() => {
-            if (!leftPupil || !rightPupil) return;
-            
-            // Only do random movement if user is idle (no mouse movement for a while)
-            // Random small movement
-            const randomX = (Math.random() - 0.5) * 4;
-            const randomY = (Math.random() - 0.5) * 3;
-            
-            leftPupil.style.transform = `translate(calc(-50% + ${randomX}px), calc(-50% + ${randomY}px))`;
-            rightPupil.style.transform = `translate(calc(-50% + ${randomX}px), calc(-50% + ${randomY}px))`;
-            
-            // Reset after short delay
-            setTimeout(() => {
-                if (leftPupil && rightPupil) {
-                    leftPupil.style.transform = 'translate(-50%, -50%)';
-                    rightPupil.style.transform = 'translate(-50%, -50%)';
-                }
-            }, 500 + Math.random() * 500);
-        }, 4000 + Math.random() * 3000);
     }
 
     // ============================================
